@@ -50,5 +50,40 @@ app.post('/register',(req,res)=>{
         })
     })
 })
+app.put('/Regjual/:id',(req,res)=>{
+    var sql=`update users set ? where id=${req.params.id}`
+    db.query(sql,req.body,(err,result1)=>{
+        if (err) res.status(500).send(err)
+        sql=`select * from users where id=${req.params.id}`
+        db.query(sql,(err,result2)=>{
+            if (err) res.status(404).send(err)
+            res.status(200).send(result2)
+        })
+    })
+})
 
+app.post('/Regjual/:id',(req,res)=>{
+    var sql='insert into penjual set ?'
+    // var sql=`update penjual set ? where id=${req.params.id}`
+    db.query(sql,req.body,(err,results)=>{
+        if(err) res.status(500).send(err)
+        console.log(results)
+        console.log(req.body.namatoko)
+        sql= `select * from penjual where namatoko='${req.body.namatoko}';`
+        db.query(sql,(err,result1)=>{
+            if (err) res.status(404).send(err)
+            console.log(result1.id)
+            res.status(200).send(result1)
+            // sql=`update users set penjualid=${result1.id} where id=${req.params.id}`
+            // db.query(sql,(err,result1)=>{
+            //     if (err) res.status(500).send(err)
+            //     sql=`select * from users where id=${req.params.id}`
+            //     db.query(sql,(err,result2)=>{
+            //         if (err) res.status(404).send(err)
+            //         res.status(200).send(result2)
+            //     })
+            // })
+        })    
+    })
+})
 app.listen(port,()=>console.log('API aktif di port '+port))
