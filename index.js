@@ -2,25 +2,37 @@ var express=require('express')
 var cors=require('cors')
 var BodyParser=require('body-parser')
 var app =express()
-var mysql=require('mysql')
+// var mysql=require('mysql')
+var port=2001
 
 app.use(BodyParser.json())
 app.use(cors())//pemeberian izin api
-var port=2001
 
-var db=mysql.createConnection({
-    host:'localhost',
-    user:'dino9611',
-    password:'tungkal01',
-    database:'marketplaceproject',
-    port:'3306'
-})
-const {penjualRouter,userRouter}=require('./routers')
+const {penjualRouter,userRouter,productRouter}=require('./routers')
 
 app.use('/users',userRouter)
+app.use('/product',productRouter)
 app.use('/penjual',penjualRouter)
+app.use(BodyParser.urlencoded({extended:false}))
+app.use(express.static('public'))
+app.get('/',(req,res)=>{
+    res.status(200).send('<h1>API AKTIF </h1>')
+})
 
 
+
+
+
+
+
+app.listen(port,()=>console.log('API aktif di port '+port))
+// var db=mysql.createConnection({
+//     host:'localhost',
+//     user:'dino9611',
+//     password:'tungkal01',
+//     database:'marketplaceproject',
+//     port:'3306'
+// })
 // app.get('/users',(req,res)=>{
 //     var sql= `select u.*,p.id as penjualid from users u left join penjual p on u.id=p.userid`
     // if(req.query.username){
@@ -95,4 +107,3 @@ app.use('/penjual',penjualRouter)
 //         })    
 //     })
 // })
-app.listen(port,()=>console.log('API aktif di port '+port))
