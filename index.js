@@ -4,6 +4,7 @@ var BodyParser=require('body-parser')
 var app =express()
 // var mysql=require('mysql')
 var port=2001
+var {hashcrypt}=require('./helpers/cryptpass')
 
 app.use(BodyParser.json())
 app.use(cors())//pemeberian izin api
@@ -19,7 +20,12 @@ app.get('/',(req,res)=>{
     res.status(200).send('<h1>API AKTIF </h1>')
 })
 
-
+app.get('/testcrypt',(req,res)=>{
+    var hashpassword=hashcrypt(req.query.password)
+    console.log(hashpassword)
+    res.send(`Panjang=${hashpassword.length} password anda ${req.query.password} di encript menjadi ${hashpassword} `)
+    
+})
 
 
 

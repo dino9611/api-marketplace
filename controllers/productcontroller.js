@@ -6,7 +6,7 @@ const moment=require('moment')
 module.exports={
     getProductpenjual:(req,res)=>{
         var penjualid=req.params.id
-        var sql=`select * from products where penjualid=${penjualid}`
+        var sql=` select p.*,c.namacategory from products p left join category_products c on p.categoryprodid=c.id where penjualid=${penjualid}`
         db.query(sql,(err,results)=>{
             if(err) {
                 console.log(err.message);
@@ -48,7 +48,7 @@ module.exports={
                     }
                    
                     console.log(results);
-                    sql = `SELECT * from products where penjualid=${penjualid}`;
+                    sql = ` select p.*,c.namacategory from products p left join category_products c on p.categoryprodid=c.id where penjualid=${penjualid}`;
                     db.query(sql, (err, results) => {
                         if(err) {
                             console.log(err.message);
@@ -63,5 +63,97 @@ module.exports={
         } catch (err) {
             return res.status(500).json({ message: "There's an error on the server. Please contact the administrator.", error: err.message });
         }
+    },
+    deleteproduct:(req,res)=>{
+        var postId=req.params.id
+        var {penjualid}=req.query
+        var sql= ` select * from products where id=${postId}`
+        db.query(sql,(err,results)=>{
+            if(err){
+                return res.status(500).json({message: "There's an error on the server. Please contact the administrator.", error: err.message})
+            }
+            if(results.length>0){
+                sql=`delete from products where id=${postId}`
+                db.query(sql,(err1,results1)=>{
+                    if(err1){
+                        return res.status(500).json({message: "There's an error on the server. Please contact the administrator.", error: err1.message})
+                    }
+                    fs.unlinkSync('./public'+results[0].image)
+                    sql = ` select p.*,c.namacategory from products p left join category_products c on p.categoryprodid=c.id where penjualid=${penjualid}`
+                    db.query(sql, (err2, results2) => {
+                        if(err2) {
+                            console.log(err.message);
+                            return res.status(500).json({ message: "There's an error on the server. Please contact the administrator.", error: err2.message });
+                        }
+                        console.log(results2);
+                        
+                        res.status(200).send(results2);
+                    })   
+                })
+            }
+        })
+    },
+    editproduct:(req,res)=>{
+        var postId = req.params.id;
+        var {penjualid}=req.query
+        var sql = ` select * from products p left join category_products c on p.categoryprodid=c.id where p.id = ${postId};`;
+        db.query(sql, (err, results) => {
+            if(err) throw err;
+    
+            if(results.length > 0) {
+                const path = '/product/images'; //file save path
+                const upload = uploader(path, 'PROD').fields([{ name: 'image'}]); //uploader(path, 'default prefix')
+    
+                upload(req, res, (err) => {
+                    if(err){
+                        return res.status(500).json({ message: 'Upload post picture failed !', error: err.message });
+                    }
+    
+                    const { image } = req.files;
+                    // console.log(image)
+                    const imagePath = image ? path + '/' + image[0].filename : null;
+                    const data = JSON.parse(req.body.data);
+                    data.waktuupload=new Date()
+                    try {
+                        if(imagePath) {
+                            data.image = imagePath;
+                            
+                        }
+                        sql = `Update products set ? where id = ${postId};`
+                        db.query(sql,data, (err1,results1) => {
+                            if(err1) {
+                                if(imagePath) {
+                                    fs.unlinkSync('./public' + imagePath);
+                                }
+                                return res.status(500).json({ message: "There's an error on the server. Please contact the administrator.", error: err1.message });
+                            }
+                            if(imagePath) {
+                                fs.unlinkSync('./public' + results[0].image);
+                            }
+                            sql = ` select p.*,c.namacategory from products p left join category_products c on p.categoryprodid=c.id where penjualid=${penjualid}`;
+                            db.query(sql, (err2,results2) => {
+                                if(err2) {
+                                    return res.status(500).json({ message: "There's an error on the server. Please contact the administrator.", error: err1.message });
+                                }
+
+                                return res.status(200).send(results2);
+                            })
+                        })
+                    }
+                    catch(err){
+                        console.log(err.message)
+                        return res.status(500).json({ message: "There's an error on the server. Please contact the administrator.", error: err.message });
+                    }
+                })
+            }
+        })
+    },
+    pilihancategory:(req,res)=>{
+        var {catpenjualid}=req.params
+        var sql=`select * from category_products where catpenjualid=${catpenjualid}`
+        db.query(sql,(err,results)=>{
+            if(err) return res.status(500).json({ message: "There's an error on the server. Please contact the administrator.", error: err.message });
+            res.status(200).send(results)
+        })
     }
 }
