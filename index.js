@@ -9,11 +9,12 @@ var {hashcrypt}=require('./helpers/cryptpass')
 app.use(BodyParser.json())
 app.use(cors())//pemeberian izin api
 
-const {penjualRouter,userRouter,productRouter}=require('./routers')
+const {penjualRouter,userRouter,productRouter,cartRouter}=require('./routers')
 
 app.use('/users',userRouter)
 app.use('/product',productRouter)
 app.use('/penjual',penjualRouter)
+app.use('/cart',cartRouter)
 app.use(BodyParser.urlencoded({extended:false}))
 app.use(express.static('public'))
 app.get('/',(req,res)=>{

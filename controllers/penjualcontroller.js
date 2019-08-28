@@ -15,5 +15,18 @@ module.exports={
                 res.status(200).send(result1)
             })
         })
+    },
+    getPenjualDetail:(req,res)=>{
+        var penjualid=req.params.id
+        var sql=` select * from penjual where id=${penjualid}`
+        db.query(sql,(err,results)=>{
+            if(err) {
+                console.log(err.message);
+                return res.status(500).json({ message: "There's an error on the server. Please contact the administrator.", error: err.message });
+            }
+            console.log(results);
+            
+            res.status(200).send(results[0]);
+        })
     }    
 }

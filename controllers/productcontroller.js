@@ -4,6 +4,32 @@ const fs=require('fs')
 const moment=require('moment')
 
 module.exports={
+    getProductDetail:(req,res)=>{
+        var productid=req.params.id
+        var sql=` select p.*,c.namacategory, pen.namatoko,pen.imageprofile from products p left join category_products c on p.categoryprodid=c.id 
+        join  penjual pen on p.penjualid=pen.id where p.id=${productid}`
+        db.query(sql,(err,results)=>{
+            if(err) {
+                console.log(err.message);
+                return res.status(500).json({ message: "There's an error on the server. Please contact the administrator.", error: err.message });
+            }
+            console.log(results);
+            
+            res.status(200).send(results[0]);
+        })
+    },
+    getAllProductpenjualhome:(req,res)=>{
+        var sql=` select p.*,c.namacategory from products p left join category_products c on p.categoryprodid=c.id limit 10`
+        db.query(sql,(err,results)=>{
+            if(err) {
+                console.log(err.message);
+                return res.status(500).json({ message: "There's an error on the server. Please contact the administrator.", error: err.message });
+            }
+            console.log(results);
+            
+            res.status(200).send(results);
+        })
+    },
     getProductpenjual:(req,res)=>{
         var penjualid=req.params.id
         var sql=` select p.*,c.namacategory from products p left join category_products c on p.categoryprodid=c.id where penjualid=${penjualid}`
@@ -19,6 +45,7 @@ module.exports={
     },
     addproduct:(req,res)=>{
         var penjualid=req.params.id
+        
         try {
             const path = '/product/images'; //file save path
             const upload = uploader(path, 'PROD').fields([{ name: 'image'}]); //uploader(path, 'default prefix')
