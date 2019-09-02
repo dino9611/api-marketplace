@@ -4,6 +4,7 @@ var db=mysql.createConnection({
     user:'dino9611',
     password:'tungkal01',
     database:'marketplaceproject',
+    multipleStatements:true,
     port:'3306'
 })
 

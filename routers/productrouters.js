@@ -9,5 +9,6 @@ router.put('/editproduct/:id',productController.editproduct)
 router.get('/getcategory/:catpenjualid',productController.pilihancategory)
 router.get('/getallproducthome',productController.getAllProductpenjualhome)
 router.get('/getproductdetail/:id',productController.getProductDetail)
+router.get('/getsearchproduct',productController.getsearchproduct)
 
 module.exports=router

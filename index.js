@@ -2,6 +2,7 @@ var express=require('express')
 var cors=require('cors')
 var BodyParser=require('body-parser')
 var app =express()
+var rajaapi=require('rajaongkir-nodejs').Starter('a69e60a290c4bd5e92b679513277e54f')
 // var mysql=require('mysql')
 var port=2001
 var {hashcrypt}=require('./helpers/cryptpass')
@@ -9,12 +10,13 @@ var {hashcrypt}=require('./helpers/cryptpass')
 app.use(BodyParser.json())
 app.use(cors())//pemeberian izin api
 
-const {penjualRouter,userRouter,productRouter,cartRouter}=require('./routers')
+const {penjualRouter,userRouter,productRouter,cartRouter,transaksiRouter}=require('./routers')
 
 app.use('/users',userRouter)
 app.use('/product',productRouter)
 app.use('/penjual',penjualRouter)
 app.use('/cart',cartRouter)
+app.use('/transaksi',transaksiRouter)
 app.use(BodyParser.urlencoded({extended:false}))
 app.use(express.static('public'))
 app.get('/',(req,res)=>{
@@ -25,6 +27,31 @@ app.get('/testcrypt',(req,res)=>{
     var hashpassword=hashcrypt(req.query.password)
     console.log(hashpassword)
     res.send(`Panjang=${hashpassword.length} password anda ${req.query.password} di encript menjadi ${hashpassword} `)
+    
+})
+app.get('/getcity',(req,res)=>{
+    var params = {
+        origin: 501, // ID Kota atau Kabupaten Asal
+        destination: 114, // ID Kota atau Kabupaten Tujuan
+        weight: 1700 // Berat Barang dalam gram (gr)
+    };
+    // rajaapi.getProvince(1)
+    // .then((res1)=>{
+    //     res.send(res1.rajaongkir.results)
+    // })
+
+    rajaapi.getCities()
+    .then((res2)=>{
+        var baru=res2.rajaongkir.results.filter((item)=>{
+            return item.province_id==1
+        })
+        return res.send(baru)
+    })
+    // rajaapi.getJNECost(params).then(function (result){
+    //     res.send(result)
+    // }).catch(function (error){
+    //     console.log(error)
+    // });
     
 })
 
