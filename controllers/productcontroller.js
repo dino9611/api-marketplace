@@ -184,7 +184,7 @@ module.exports={
         })
     },
     getsearchproduct:(req,res)=>{
-        var {prod,page}=req.query
+        var {prod,page,cat}=req.query
         var offset=(page*2)-2//2 karena 1 page a=hanya 2 product ini nanti diganti
         if(!page){
             offset=0
@@ -194,6 +194,10 @@ module.exports={
         }
         var sql=`select p.*,c.namacategory from products p left 
                 join category_products c on p.categoryprodid=c.id where p.nama like '%${prod}%' limit ${offset},2`
+        if(cat!=0){
+            sql=`select p.*,c.namacategory from products p left 
+                join category_products c on p.categoryprodid=c.id where p.nama like '%${prod}%' and categoryprodid=${cat} limit ${offset},2`
+        }
         db.query(sql,(err,results1)=>{
             if(err) return res.status(500).send({message:err})
             sql=`select count(*) as jumlah from products where nama like '%${prod}%'`

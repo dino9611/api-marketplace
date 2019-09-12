@@ -24,6 +24,7 @@ router.get('/getpesananonProsess/:userid',transaksiController.getpesananonProses
 router.get('/getpesananOnSent/:userid',transaksiController.getpesananOnSent)
 router.get('/getPesananFinished/:userid',transaksiController.getPesananFinished)
 router.put('/PutStatusPesananSampai',transaksiController.PutStatusPesananSampai)
+router.get('/Getnotif',transaksiController.getNotifList)
 
 
 

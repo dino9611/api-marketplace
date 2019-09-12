@@ -4,7 +4,7 @@ var {db}=require('../database')
 module.exports={
     addtocart:(req,res)=>{
         const {userid,productid,penjualid,quantity}=req.body
-        var sql=`select * from transaksi where userid=${userid} and productid=${productid} and status='oncart'`
+        var sql=`select * from transaksi where userid=${userid} and productid=${productid} and status='oncart' and deleted=0`
         db.query(sql,(err,result)=>{
             if(result.length===0){
                 var data={
@@ -60,7 +60,15 @@ module.exports={
         const {id}=req.params
         var sql=`select count(*)as jumlahcart from transaksi where userid=${id} and status='oncart' and deleted=0`
         db.query(sql,(err,result)=>{
-            if(err) res.status(500).send({err,message:'gagal updatecart',err})
+            if(err) res.status(500).send({err,message:'gagal countcart',err})
+            return res.status(200).send(result[0])
+        })
+    },
+    countNotif:(req,res)=>{
+        const {id}=req.params
+        var sql=`select count(*)as jumlahnotif from notif where userid=${id} and opened=0`
+        db.query(sql,(err,result)=>{
+            if(err) res.status(500).send({err,message:'gagal countnotif',err})
             return res.status(200).send(result[0])
         })
     },

@@ -9,6 +9,8 @@ var {hashcrypt}=require('./helpers/cryptpass')
 
 app.use(BodyParser.json())
 app.use(cors())//pemeberian izin api
+app.use(BodyParser.urlencoded({extended:false}))
+app.use(express.static('public'))//untuk munculin gambar
 
 const {penjualRouter,userRouter,productRouter,cartRouter,transaksiRouter}=require('./routers')
 
@@ -17,8 +19,6 @@ app.use('/product',productRouter)
 app.use('/penjual',penjualRouter)
 app.use('/cart',cartRouter)
 app.use('/transaksi',transaksiRouter)
-app.use(BodyParser.urlencoded({extended:false}))
-app.use(express.static('public'))
 app.get('/',(req,res)=>{
     res.status(200).send('<h1>API AKTIF </h1>')
 })

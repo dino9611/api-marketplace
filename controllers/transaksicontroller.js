@@ -346,6 +346,17 @@ module.exports={
             if(err) res.status(500).send(err)
             return res.status(200).send(result)
         })
-
     },
+    getNotifList:(req,res)=>{
+        var {limit,userid}=req.query
+        var sql=`update notif set opened=1 where userid=${userid}`
+        db.query(sql,(err,result1)=>{
+            if(err) res.status(500).send(err)
+            sql=`select * from notif where userid=${userid} order by id desc Limit ${limit}`
+            db.query(sql,(err,result)=>{
+                if(err) res.status(500).send(err)
+                return res.status(200).send(result)
+            })
+        })
+    }
 }
