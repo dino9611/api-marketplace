@@ -1,6 +1,7 @@
 var {db}=require('../database')
 var {hashcrypt}=require('./../helpers/cryptpass')
 var transporter=require('./../helpers/mailer')
+const {createJWTToken}=require('./../helpers/jwt')
 
 module.exports={
     login:(req,res)=>{
@@ -16,10 +17,11 @@ module.exports={
             var data={
                 lastlogin:new Date()
             }
+            const token =createJWTToken({userid:results[0].id,username:results[0].username})
             sql=`update users set ? where username='${username}' and password='${hashpassword}'`
             db.query(sql,data,(err1,results1)=>{
                 if (err1) return res.status(500).send({status:'error2',err1})
-                return res.status(200).send(results)
+                return res.status(200).send({data:results,token})
             })
         })
     },
@@ -32,7 +34,8 @@ module.exports={
         db.query(sql,(err,result)=>{
             if (err) res.status(500).send(err)
             console.log(result)
-            res.status(200).send(result)
+            const token =createJWTToken({userid:result[0].id,username:result[0].username})
+            res.status(200).send({data:result,token})
         })
     },
     addRegister:(req,res)=>{
@@ -67,7 +70,8 @@ module.exports={
                     }
                     console.log(`success`)
                     console.log(result)
-                    res.status(200).send(result)
+                    const token =createJWTToken({userid:result[0].id,username:result[0].username})
+                    res.status(200).send({data:result,token})
                 })
                     
             })

@@ -6,19 +6,22 @@ var rajaapi=require('rajaongkir-nodejs').Starter('a69e60a290c4bd5e92b679513277e5
 // var mysql=require('mysql')
 var port=2001
 var {hashcrypt}=require('./helpers/cryptpass')
+var bearerToken=require('express-bearer-token')
 
-app.use(BodyParser.json())
-app.use(cors())//pemeberian izin api
-app.use(BodyParser.urlencoded({extended:false}))
+app.use(BodyParser.json())//untuk req.body
+app.use(cors())//pemberian izin api
+app.use(bearerToken())//untuk dapetin token di auth
+app.use(BodyParser.urlencoded({extended:false}))//untuk req.body append
 app.use(express.static('public'))//untuk munculin gambar
 
-const {penjualRouter,userRouter,productRouter,cartRouter,transaksiRouter}=require('./routers')
+const {penjualRouter,userRouter,productRouter,cartRouter,transaksiRouter,adminRouter}=require('./routers')
 
 app.use('/users',userRouter)
 app.use('/product',productRouter)
 app.use('/penjual',penjualRouter)
 app.use('/cart',cartRouter)
 app.use('/transaksi',transaksiRouter)
+app.use('/admin',adminRouter)
 app.get('/',(req,res)=>{
     res.status(200).send('<h1>API AKTIF </h1>')
 })

@@ -140,5 +140,33 @@ module.exports={
                 })
             }
         })
-    }      
+    },
+    editAbouttoko:(req,res)=>{
+        var {id}=req.query
+        var sql=`Update penjual set ? where id = ${id};`
+        db.query(sql,req.body,(err,result)=>{
+            if(err) res.status(500).send(err)
+            sql=`select * from penjual where id = ${id}`
+            db.query(sql, (err2,results2) => {
+                if(err2) {
+                    return res.status(500).json({ message: "There's an error on the server. Please contact the administrator.", error: err1.message });
+                }
+                return res.status(200).send(results2[0]);
+            })
+        })
+    },
+    editAlamattoko:(req,res)=>{
+        var {id}=req.query
+        var sql=`Update penjual set ? where id = ${id};`
+        db.query(sql,req.body,(err,result)=>{
+            if(err) res.status(500).send(err)
+            sql=`select * from penjual where id = ${id}`
+            db.query(sql, (err2,results2) => {
+                if(err2) {
+                    return res.status(500).json({ message: "There's an error on the server. Please contact the administrator.", error: err1.message });
+                }
+                return res.status(200).send(results2[0]);
+            })
+        })
+    },       
 }
