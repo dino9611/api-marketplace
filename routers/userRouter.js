@@ -8,5 +8,8 @@ router.post('/register',userController.addRegister)
 router.post('/login',userController.login)
 router.put('/verifikasiemail',userController.emailverifikasi)
 router.post('/resendemailver',userController.resendEmailVer)
+router.get('/userSettings',userController.getDataUserSetting)
+router.put('/editalamatSetting',userController.editalamatSetting)
+
 
 module.exports=router

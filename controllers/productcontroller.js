@@ -19,7 +19,7 @@ module.exports={
         })
     },
     getAllProductpenjualhome:(req,res)=>{
-        var sql=` select p.*,c.namacategory from products p left join category_products c on p.categoryprodid=c.id limit 10`
+        var sql=` select p.*,c.namacategory from products p left join category_products c on p.categoryprodid=c.id where p.deleted=0 limit 10`
         db.query(sql,(err,results)=>{
             if(err) {
                 console.log(err.message);
@@ -32,7 +32,7 @@ module.exports={
     },
     getProductpenjual:(req,res)=>{
         var penjualid=req.params.id
-        var sql=` select p.*,c.namacategory from products p left join category_products c on p.categoryprodid=c.id where penjualid=${penjualid}`
+        var sql=` select p.*,c.namacategory from products p left join category_products c on p.categoryprodid=c.id where penjualid=${penjualid} and p.deleted=0`
         db.query(sql,(err,results)=>{
             if(err) {
                 console.log(err.message);
@@ -75,7 +75,7 @@ module.exports={
                     }
                    
                     console.log(results);
-                    sql = ` select p.*,c.namacategory from products p left join category_products c on p.categoryprodid=c.id where penjualid=${penjualid}`;
+                    sql = ` select p.*,c.namacategory from products p left join category_products c on p.categoryprodid=c.id where penjualid=${penjualid} and p.deleted=0`;
                     db.query(sql, (err, results) => {
                         if(err) {
                             console.log(err.message);
@@ -100,13 +100,13 @@ module.exports={
                 return res.status(500).json({message: "There's an error on the server. Please contact the administrator.", error: err.message})
             }
             if(results.length>0){
-                sql=`delete from products where id=${postId}`
+                sql=`Update products set deleted=1 where id=${postId}`
                 db.query(sql,(err1,results1)=>{
                     if(err1){
                         return res.status(500).json({message: "There's an error on the server. Please contact the administrator.", error: err1.message})
                     }
-                    fs.unlinkSync('./public'+results[0].image)
-                    sql = ` select p.*,c.namacategory from products p left join category_products c on p.categoryprodid=c.id where penjualid=${penjualid}`
+                    // fs.unlinkSync('./public'+results[0].image)
+                    sql = ` select p.*,c.namacategory from products p left join category_products c on p.categoryprodid=c.id where penjualid=${penjualid} and p.deleted=0`
                     db.query(sql, (err2, results2) => {
                         if(err2) {
                             console.log(err.message);
@@ -157,7 +157,7 @@ module.exports={
                             if(imagePath) {
                                 fs.unlinkSync('./public' + results[0].image);
                             }
-                            sql = ` select p.*,c.namacategory from products p left join category_products c on p.categoryprodid=c.id where penjualid=${penjualid}`;
+                            sql = ` select p.*,c.namacategory from products p left join category_products c on p.categoryprodid=c.id where penjualid=${penjualid} and p.deleted=0`;
                             db.query(sql, (err2,results2) => {
                                 if(err2) {
                                     return res.status(500).json({ message: "There's an error on the server. Please contact the administrator.", error: err1.message });
@@ -185,7 +185,7 @@ module.exports={
     },
     getsearchproduct:(req,res)=>{
         var {prod,page,cat}=req.query
-        var offset=(page*2)-2//2 karena 1 page a=hanya 2 product ini nanti diganti
+        var offset=(page*12)-12//2 karena 1 page a=hanya 2 product ini nanti diganti
         if(!page){
             offset=0
         }
@@ -193,14 +193,17 @@ module.exports={
             prod=''
         }
         var sql=`select p.*,c.namacategory from products p left 
-                join category_products c on p.categoryprodid=c.id where p.nama like '%${prod}%' limit ${offset},2`
+                join category_products c on p.categoryprodid=c.id where p.nama like '%${prod}%' and p.deleted=0 limit ${offset},12`
         if(cat!=0){
             sql=`select p.*,c.namacategory from products p left 
-                join category_products c on p.categoryprodid=c.id where p.nama like '%${prod}%' and categoryprodid=${cat} limit ${offset},2`
+                join category_products c on p.categoryprodid=c.id where p.nama like '%${prod}%' and categoryprodid=${cat} and p.deleted=0 limit ${offset},12`
         }
         db.query(sql,(err,results1)=>{
             if(err) return res.status(500).send({message:err})
-            sql=`select count(*) as jumlah from products where nama like '%${prod}%'`
+            sql=`select count(*) as jumlah from products where nama like '%${prod}%' and deleted=0`
+            if(cat!=0){
+                sql=`select count(*) as jumlah from products where nama like '%${prod}%' and categoryprodid=${cat} and deleted=0`
+            }
             db.query(sql,(err,result2)=>{
                 if(err) return res.status(500).send({message:err})
                 return res.status(200).send({pagination:results1,page:result2[0]})

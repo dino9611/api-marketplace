@@ -38,7 +38,7 @@ module.exports={
     getcartdata:(req,res)=>{
         var {id}=req.params
         var sql=`select t.*,p.nama,p.image,p.harga,pj.namatoko from transaksi t 
-                join products p on t.productid=p.id join penjual pj on t.penjualid=pj.id where t.userid=${id} and status='oncart' and deleted=0`
+                join products p on t.productid=p.id join penjual pj on t.penjualid=pj.id where t.userid=${id} and status='oncart' and t.deleted=0`
         db.query(sql,(err,result)=>{
             if(err) res.status(500).send({err,message:'gagal get',err})
             return res.status(200).send(result)
@@ -80,7 +80,7 @@ module.exports={
             if(err) res.status(500).send({err,message:'gagal delete cart',err})
             sql=`select t.*,p.nama,p.image,p.harga,pj.namatoko from transaksi t 
                     join products p on t.productid=p.id join penjual pj on t.penjualid=pj.id 
-                    where t.userid=${userid} and status='oncart' and deleted=0`
+                    where t.userid=${userid} and status='oncart' and t.deleted=0`
             db.query(sql,(err,result)=>{
                 if(err) res.status(500).send({err,message:'gagal updatecart'})
                 return res.status(200).send(result)

@@ -135,5 +135,25 @@ module.exports={
             console.log(result)
             res.status(200).send(result)
         })
+    },
+    getDataUserSetting:(req,res)=>{
+        var {id}=req.query
+        var sql=`select u.*,p.id as penjualid, kategoritoko from users u left join penjual p on u.id=p.userid where u.id=${id}`
+        db.query(sql,(err,result)=>{
+            if (err) res.status(500).send(err)
+            return res.status(200).send(result)
+        })
+    },
+    editalamatSetting:(req,res)=>{
+        var {id}=req.query
+        var sql=`update users set ? where id=${id}`
+        db.query(sql,req.body,(err,result)=>{
+            if (err) res.status(500).send(err)
+            sql=`select u.*,p.id as penjualid, kategoritoko from users u left join penjual p on u.id=p.userid where u.id=${id}`
+            db.query(sql,(err,result1)=>{
+                if (err) res.status(500).send(err)
+                return res.status(200).send(result1)
+            })
+        })
     }
 }

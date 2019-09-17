@@ -30,7 +30,7 @@ module.exports={
                 if(err) res.status(500).send(err)
                 sql=`select t.*,p.nama,p.image,p.harga,pj.namatoko from transaksi t 
                 join products p on t.productid=p.id join penjual pj on t.penjualid=pj.id 
-                where t.userid=${id} and status='oncart' and deleted=0`
+                where t.userid=${id} and status='oncart' and t.deleted=0`
                 db.query(sql,(err,result2)=>{
                     if(err) res.status(500).send(err)
                     return res.status(200).send(result2)
@@ -66,7 +66,7 @@ module.exports={
         var {userid}=req.params
         var sql=`select t.*,p.nama,p.image,p.harga,pj.namatoko from transaksi t 
                 join products p on t.productid=p.id join penjual pj on t.penjualid=pj.id 
-                where t.userid=${userid} and  deleted=0 and t.status in('admin confirmed','konfirmasi admin')`
+                where t.userid=${userid} and  t.deleted=0 and t.status in('admin confirmed','konfirmasi admin')`
         db.query(sql,(err,result)=>{
             if(err) res.status(500).send(err)
             return res.status(200).send(result)
@@ -76,7 +76,7 @@ module.exports={
         var {userid}=req.params
         var sql=`select t.*,p.nama,p.image,p.harga,pj.namatoko from transaksi t 
                 join products p on t.productid=p.id join penjual pj on t.penjualid=pj.id 
-                where t.userid=${userid} and  deleted=0 and t.status='Onproses'`
+                where t.userid=${userid} and  t.deleted=0 and t.status='Onproses'`
         db.query(sql,(err,result)=>{
             if(err) res.status(500).send(err)
             return res.status(200).send(result)
@@ -86,7 +86,7 @@ module.exports={
         var {userid}=req.params
         var sql=`select t.*,p.nama,p.image,p.harga,pj.namatoko from transaksi t 
                 join products p on t.productid=p.id join penjual pj on t.penjualid=pj.id 
-                where t.userid=${userid} and  deleted=0 and t.status='onSent'`
+                where t.userid=${userid} and  t.deleted=0 and t.status='onSent'`
         db.query(sql,(err,result)=>{
             if(err) res.status(500).send(err)
             return res.status(200).send(result)
@@ -96,7 +96,7 @@ module.exports={
         var {userid}=req.params
         var sql=`select t.*,p.nama,p.image,p.harga,pj.namatoko from transaksi t 
                 join products p on t.productid=p.id join penjual pj on t.penjualid=pj.id 
-                where t.userid=${userid} and  deleted=0 and t.status='Finished'`
+                where t.userid=${userid} and  t.deleted=0 and t.status='Finished'`
         db.query(sql,(err,result)=>{
             if(err) res.status(500).send(err)
             return res.status(200).send(result)
@@ -109,7 +109,7 @@ module.exports={
             if(err) res.status(500).send(err)
             sql=`select t.*,p.nama,p.image,p.harga,pj.namatoko from transaksi t 
             join products p on t.productid=p.id join penjual pj on t.penjualid=pj.id 
-            where t.userid=${userid} and  deleted=0 and t.status='onSent'`
+            where t.userid=${userid} and  t.deleted=0 and t.status='onSent'`
             db.query(sql,(err,result)=>{
                 if(err) res.status(500).send(err)
                 return res.status(200).send(result)
@@ -120,11 +120,43 @@ module.exports={
         var {userid,paymentid}=req.query
         var sql=`select t.*,p.nama,p.image,p.harga,pj.namatoko from transaksi t 
                 join products p on t.productid=p.id join penjual pj on t.penjualid=pj.id 
-                where t.userid=${userid} and  deleted=0 and paymentid=${paymentid}`
+                where t.userid=${userid} and  t.deleted=0 and paymentid=${paymentid}`
         db.query(sql,(err,result)=>{
             if(err) res.status(500).send(err)
             return res.status(200).send(result)
         })
+    },
+    UpdateOvertime:(req,res)=>{
+        var {userid}=req.query
+        var sql= `select * from userpayment where tglexp<now() and userid=5 and status='waitingpayment' and image is null`
+        db.query(sql,(err,result)=>{
+            if(err) res.status(500).send(err)
+            if(result.length>0){
+                sql=`Update userpayment set status='CanceledPayment' where tglexp<now() and userid=${userid} and status='waitingpayment' and image is null`
+                db.query(sql,(err,results1)=>{
+                    if(err) res.status(500).send(err)
+                    var newarr=result
+                    sql=``
+                    for(var i=0;i<newarr.length;i++){
+                        sql+=`update transaksi set status='CanceledPayment'where paymentid=${newarr[i].id};`
+                    }
+                    db.query(sql,(err,results2)=>{
+                        if(err) res.status(500).send(err)
+                        sql=`INSERT INTO notif (message,userid,paymentid,opened) VALUES ?`
+                        var values=[]
+                        for(var i=0;i<newarr.length;i++){
+                            values.push([`Pembayaran dengan id ${newarr[i].id} dibatalkan karena sudah melebihi batas waktu`,parseInt(userid) ,newarr[i].id,0])
+                        }
+                        console.log(values)
+                        db.query(sql,[values],(err,results3)=>{
+                            if(err) res.status(500).send(err)
+                            return res.status(200).send(results3)
+                        })
+                    })
+                })
+            }
+        })
+
     },
     editUploadPay:(req,res)=>{
         var {paymentid}=req.params
@@ -220,9 +252,9 @@ module.exports={
     },
     getMasukpenjualdata:(req,res)=>{
         var {penjualid}=req.query
-        var sql=`select t.*,p.nama,p.harga,u.username from transaksi t 
+        var sql=`select t.*,p.nama,p.harga,u.username,u.alamat from transaksi t 
                 join products p on t.productid=p.id join users u on t.userid=u.id where t.penjualid=${penjualid} 
-                and status='admin confirmed' and deleted=0`
+                and status='admin confirmed' and t.deleted=0`
         db.query(sql,(err,result)=>{
             if(err) res.status(500).send(err)
             return res.status(200).send(result)
@@ -246,7 +278,7 @@ module.exports={
                 if(err) res.status(500).send(err)
                 sql=`select t.*,p.nama,p.harga,u.username from transaksi t 
                     join products p on t.productid=p.id join users u on t.userid=u.id where t.penjualid=${penjualid} 
-                    and status='admin confirmed' and deleted=0`
+                    and status='admin confirmed' and t.deleted=0`
                 db.query(sql,(err,result2)=>{
                     if(err) res.status(500).send(err)
                     return res.status(200).send(result2)
@@ -271,7 +303,7 @@ module.exports={
                 if(err) res.status(500).send(err)
                 sql=`select t.*,p.nama,p.harga,u.username from transaksi t 
                     join products p on t.productid=p.id join users u on t.userid=u.id where t.penjualid=${penjualid} 
-                    and status='Onproses' and deleted=0`
+                    and status='Onproses' and t.deleted=0`
                 db.query(sql,(err,result2)=>{
                     if(err) res.status(500).send(err)
                     return res.status(200).send(result2)
@@ -296,7 +328,7 @@ module.exports={
                 if(err) res.status(500).send(err)
                 sql=`select t.*,p.nama,p.harga,u.username from transaksi t 
                     join products p on t.productid=p.id join users u on t.userid=u.id where t.penjualid=${penjualid} 
-                    and status='admin confirmed' and deleted=0`
+                    and status='admin confirmed' and t.deleted=0`
                 db.query(sql,(err,result2)=>{
                     if(err) res.status(500).send(err)
                     return res.status(200).send(result2)
@@ -328,9 +360,9 @@ module.exports={
     },
     getlistOnproses:(req,res)=>{
         var {penjualid}=req.query
-        var sql=`select t.*,p.nama,p.harga,u.username from transaksi t 
+        var sql=`select t.*,p.nama,p.harga,u.username,u.alamat from transaksi t 
                 join products p on t.productid=p.id join users u on t.userid=u.id where t.penjualid=${penjualid} 
-                and status='Onproses' and deleted=0`
+                and status='Onproses' and t.deleted=0`
         db.query(sql,(err,result)=>{
             if(err) res.status(500).send(err)
             return res.status(200).send(result)
@@ -339,9 +371,9 @@ module.exports={
     },
     getlistFinished:(req,res)=>{
         var {penjualid}=req.query
-        var sql=`select t.*,p.nama,p.harga,u.username from transaksi t 
+        var sql=`select t.*,p.nama,p.harga,u.username,u.alamat from transaksi t 
                 join products p on t.productid=p.id join users u on t.userid=u.id where t.penjualid=${penjualid} 
-                and status='Finished' and deleted=0`
+                and status='Finished' and t.deleted=0`
         db.query(sql,(err,result)=>{
             if(err) res.status(500).send(err)
             return res.status(200).send(result)
