@@ -15,5 +15,7 @@ router.put('/updateMaintext',adminController.updateMaintext)
 router.delete('/DeleteIklanhome',adminController.DeleteIklanhome)
 router.put('/DeleteCatprod/:id',adminController.DeleteCatprod)
 router.put('/DeleteCatpen/:id',adminController.DeleteCatpen)
+router.put('/SaveEditIklanhome',adminController.SaveEditIklanhome)
+
 
 module.exports=router

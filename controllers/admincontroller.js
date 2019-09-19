@@ -218,6 +218,63 @@ module.exports={
             }
         })
     },
+    SaveEditIklanhome:(req,res)=>{
+        var {id}=req.query
+        console.log(id)
+        var sql = `select * from iklan where id=${id}`
+        db.query(sql, (err, results) => {
+            if(err) throw err;
+            console.log('masuk')
+            if(results.length > 0) {
+                const path = '/admin/Iklan/images'; //file save path
+                const upload = uploader(path, 'IKL').fields([{ name: 'image'}]); //uploader(path, 'default prefix')
+    
+                upload(req, res, (err) => {
+                    if(err){
+                        return res.status(500).json({ message: 'Upload post picture failed !', error: err.message });
+                    }
+    
+                    const { image } = req.files;
+                    // console.log(image)
+                    const imagePath = image ? path + '/' + image[0].filename : null;
+                    const data = JSON.parse(req.body.data)
+                    // data.waktuupload=new Date()
+                    console.log(imagePath)
+                    try {
+                        if(imagePath) {
+                            data.iklanimage = imagePath;
+                            
+                        }
+                        sql = `Update iklan set ? where id = ${id};`
+                        db.query(sql,data, (err1,results1) => {
+                            if(err1) {
+                                if(imagePath) {
+                                    fs.unlinkSync('./public' + imagePath);
+                                }
+                                return res.status(500).json({ message: "There's an error on the server. Please contact the administrator.", error: err1.message });
+                            }
+                            if(imagePath) {
+                                if(results[0].iklanimage){
+                                    fs.unlinkSync('./public' + results[0].iklanimage);
+                                }
+                            }
+                            sql = `select * from iklan `;
+                            db.query(sql, (err2,results2) => {
+                                if(err2) {
+                                    return res.status(500).json({ message: "There's an error on the server. Please contact the administrator.", error: err1.message });
+                                }
+                                return res.status(200).send(results2);
+                            })
+                        })
+                    }
+                    catch(err){
+                        console.log(err.message)
+                        return res.status(500).json({ message: "There's an error on the server. Please contact the administrator.", error: err.message });
+                    }
+                })
+            }
+        })
+    },
     updateMaintext:(req,res)=>{
         var sql = `Update home set ? where id = 1;`
         db.query(sql,req.body,(err,result)=>{
@@ -284,7 +341,7 @@ module.exports={
     },
     DeleteIklanhome:(req,res)=>{
         var {id}=req.query
-        var sql= ` select * from iklan where id=${id}`
+        var sql= `select * from iklan where id=${id}`
         db.query(sql,(err,results)=>{
             if(err){
                 return res.status(500).json({message: "There's an error on the server. Please contact the administrator.", error: err.message})
@@ -303,6 +360,12 @@ module.exports={
                     })  
                 })
             }
+        })
+    },
+    Getallusers:(req,res)=>{
+        var sql=`select * from users`
+        db.query(sql,(err,results)=>{
+            
         })
     }
 

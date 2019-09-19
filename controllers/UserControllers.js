@@ -38,6 +38,17 @@ module.exports={
             res.status(200).send({data:result,token})
         })
     },
+    getcekuserRegister:(req,res)=>{
+        if(!req.query.username){
+            req.query.username ='' 
+        }
+        var sql= `select u.*,p.id as penjualid, kategoritoko from users u left join penjual p on u.id=p.userid where u.username=
+                '${req.query.username}' or u.email='${req.query.username}' `
+        db.query(sql,(err,result)=>{
+            if (err) res.status(500).send(err)
+            return res.status(200).send(result)
+        })
+    },
     addRegister:(req,res)=>{
         console.log(req.body)
         var {username,password,email}=req.body

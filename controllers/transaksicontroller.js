@@ -128,7 +128,7 @@ module.exports={
     },
     UpdateOvertime:(req,res)=>{
         var {userid}=req.query
-        var sql= `select * from userpayment where tglexp<now() and userid=5 and status='waitingpayment' and image is null`
+        var sql= `select * from userpayment where tglexp<now() and userid=${userid} and status='waitingpayment' and image is null`
         db.query(sql,(err,result)=>{
             if(err) res.status(500).send(err)
             if(result.length>0){
