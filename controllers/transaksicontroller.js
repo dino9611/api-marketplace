@@ -252,25 +252,32 @@ module.exports={
     },
     getMasukpenjualdata:(req,res)=>{
         var {penjualid}=req.query
-        var sql=`select t.*,p.nama,p.harga,u.username,u.alamat from transaksi t 
-                join products p on t.productid=p.id join users u on t.userid=u.id where t.penjualid=${penjualid} 
-                and status='admin confirmed' and t.deleted=0`
-        db.query(sql,(err,result)=>{
+        var sql=`select t.*,p.nama,p.harga,u.username,u.alamat,pen.namatoko from transaksi t 
+                join products p on t.productid=p.id join users u on t.userid=u.id join  penjual pen on t.penjualid=pen.id where t.penjualid=${penjualid} 
+                and status='admin confirmed' and t.deleted=0 group by paymentid `
+        db.query(sql,(err,result1)=>{
             if(err) res.status(500).send(err)
-            return res.status(200).send(result)
-        })
+            sql=`select t.*,p.nama,p.harga,u.username,u.alamat,pen.namatoko from transaksi t 
+            join products p on t.productid=p.id join users u on t.userid=u.id join  penjual pen on t.penjualid=pen.id where t.penjualid=${penjualid} 
+            and status='admin confirmed' and t.deleted=0 `
+            db.query(sql,(err,result2)=>{
+                if(err) res.status(500).send(err)
+                return res.status(200).send({payment:result1,detail:result2})
+            })
 
+        })
     },
+    
     PutonProsestransaksi:(req,res)=>{
         var {penjualid,transaksiid,paymentid,userid}=req.body
-        var sql=`Update transaksi set status='Onproses' where id=${transaksiid}`
+        var sql=`Update transaksi set status='Onproses' where paymentid=${paymentid}`
         db.query(sql,(err,result1)=>{
             if(err) res.status(500).send(err)
             var data={
                 transaksiid:transaksiid,
                 paymentid:paymentid,
                 userid:userid,
-                message:`Pesanan dengan nomer transaksi = ${transaksiid} sudah diproses di penjual`,
+                message:`Pesanan dengan nomer paymentid = ${paymentid} sudah diproses di penjual`,
                 opened:0
             }
             sql=`INSERT INTO notif SET ?`
@@ -281,7 +288,13 @@ module.exports={
                     and status='admin confirmed' and t.deleted=0`
                 db.query(sql,(err,result2)=>{
                     if(err) res.status(500).send(err)
-                    return res.status(200).send(result2)
+                    sql=`select t.*,p.nama,p.harga,u.username,u.alamat,pen.namatoko from transaksi t 
+                    join products p on t.productid=p.id join users u on t.userid=u.id join  penjual pen on t.penjualid=pen.id where t.penjualid=${penjualid} 
+                    and status='admin confirmed' and t.deleted=0 group by paymentid `
+                    db.query(sql,(err,result4)=>{
+                        if(err) res.status(500).send(err)
+                        return res.status(200).send({payment:result4,detail:result2})
+                    })
                 })
             })
         })
@@ -295,7 +308,7 @@ module.exports={
                 transaksiid:transaksiid,
                 paymentid:paymentid,
                 userid:userid,
-                message:`Pesanan dengan nomer transaksi = ${transaksiid} sudah dalam pengiriman dari penjual`,
+                message:`Pesanan dengan nomer trasaksi = ${transaksiid} sudah dalam pengiriman dari penjual`,
                 opened:0
             }
             sql=`INSERT INTO notif SET ?`
@@ -313,14 +326,14 @@ module.exports={
     },
     PutCancelProsesTransaksi:(req,res)=>{
         var {penjualid,transaksiid,paymentid,userid}=req.body
-        var sql=`Update transaksi set status='CanceledProses' where id=${transaksiid}`
+        var sql=`Update transaksi set status='CanceledProses' where paymentid=${paymentid}`
         db.query(sql,(err,result1)=>{
             if(err) res.status(500).send(err)
             var data={
                 transaksiid:transaksiid,
                 paymentid:paymentid,
                 userid:userid,
-                message:`Pesanan dengan nomer transaksi = ${transaksiid} tidak diproses oleh penjual dan uang akan dikembalikan ke rekening pengiriman`,
+                message:`Pesanan dengan nomer paymentid = ${paymentid} tidak diproses oleh penjual dan uang akan dikembalikan ke rekening pengiriman`,
                 opened:0
             }
             sql=`INSERT INTO notif SET ?`
@@ -331,7 +344,13 @@ module.exports={
                     and status='admin confirmed' and t.deleted=0`
                 db.query(sql,(err,result2)=>{
                     if(err) res.status(500).send(err)
-                    return res.status(200).send(result2)
+                    sql=`select t.*,p.nama,p.harga,u.username,u.alamat,pen.namatoko from transaksi t 
+                    join products p on t.productid=p.id join users u on t.userid=u.id join  penjual pen on t.penjualid=pen.id where t.penjualid=${penjualid} 
+                    and status='admin confirmed' and t.deleted=0 group by paymentid `
+                    db.query(sql,(err,result4)=>{
+                        if(err) res.status(500).send(err)
+                        return res.status(200).send({payment:result4,detail:result2})
+                    })
                 })
             })
         })
